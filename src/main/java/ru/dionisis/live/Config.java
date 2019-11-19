@@ -1,4 +1,4 @@
-package ru.dionisis.live.impementations;
+package ru.dionisis.live;
 
 
 import java.io.*;
@@ -9,10 +9,11 @@ import java.util.List;
  * читает и генерирует конфигурационные файлы для World
  */
 public class Config {
-    public static final File CONFIG_FILE = new File("src\\main\\resources\\config.txt");
+    public static final File CONFIG_FILE = new File("src/main/resources/config.txt");
 
     public static void main(String[] args) {
-        generateConfigFile(1000, 1000, CONFIG_FILE);
+        int size = 1000;
+        generateConfigFile(size, size, CONFIG_FILE);
 }
 
     public static List<String> readConfig(File configFile) {

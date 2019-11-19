@@ -1,9 +1,10 @@
-package ru.dionisis.live.impementations;
+package ru.dionisis.live;
 
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * реализация игры "Жизнь"
@@ -15,9 +16,9 @@ import java.util.List;
  */
 public class World {
 
-    private int height;
-    private int width;
-    private int length;
+    private final int height;
+    private final int width;
+    private final int length;
     /**
      * хранит состояние (живой/неживой) всех клеток
      */
@@ -30,7 +31,7 @@ public class World {
      * хранит индексы соседей, первое измерение - индекс интересующей клетки,
      * второе - индекс "клетки-соседа" (по 8 для каждой клетки)
      */
-    private int[][] neighborsID;
+    private final int[][] neighborsID;
 
     World(File configFile) {
         List<String> config = Config.readConfig(configFile);
@@ -90,6 +91,7 @@ public class World {
 
     /**
      * пересчитавет состояние поля в одном потоке
+     *
      * @param steps количество интераций пересчета поля
      */
     public void executeGeneration(int steps) {
@@ -101,6 +103,7 @@ public class World {
             state = newState;
         }
     }
+
 
     /**
      * пересчитывает состояние поля в нескольких потоках
