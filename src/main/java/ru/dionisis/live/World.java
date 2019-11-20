@@ -104,38 +104,41 @@ public class World {
         }
     }
 
-
     /**
-     * пересчитывает состояние поля в нескольких потоках
-     *
-     * @param steps количество интераций пересчета поля
+     * пересчитывает поле в нескольких потоках
+     * @param steps количество итераций/поколений
+     * @param quantityThreads количество потоков
      */
     public void executeGeneration(int steps, int quantityThreads) {
-        for (int i = 0; i < steps; i++) {
+        ExecutorService threads = Executors.newFixedThreadPool(quantityThreads - 1);
+        CyclicBarrier barrier = new CyclicBarrier(quantityThreads);
+        List<Runnable> tasks = initTasks(quantityThreads, barrier);
+        for (int stepID = 0; stepID < steps; stepID++) {
             newState = new byte[length];
-            ArrayList<Thread> threads = new ArrayList<>(quantityThreads);
-            for (int threadID = 0; threadID < quantityThreads; threadID++) {
-                int firstID = threadID;
-                threads.add(new Thread(() -> {
-                    for (int index = firstID; index < length; index += quantityThreads) {
-                        executeCell(index);
-                    }
-                }));
-            }
-            starAndJoinThreads(threads);
+            tasks.stream()
+                    .skip(1)
+                    .forEach(threads::submit);
+            tasks.get(0).run();
             state = newState;
         }
     }
 
-    private void starAndJoinThreads(ArrayList<Thread> threads) {
-        threads.forEach(Thread::start);
-        try {
-            for (Thread thread : threads) {
-                thread.join();
-            }
-        } catch (InterruptedException e) {
-
+    private List<Runnable> initTasks(int quantityThreads, CyclicBarrier barrier) {
+        List<Runnable> tasks = new ArrayList<>(quantityThreads);
+        for (int threadID = 0; threadID < quantityThreads; threadID++) {
+            int firstID = threadID;
+            tasks.add(() -> {
+                for (int cellID = firstID; cellID < length; cellID += quantityThreads) {
+                    executeCell(cellID);
+                }
+                try {
+                    barrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+            });
         }
+        return tasks;
     }
 
     private void executeCell(int index) {

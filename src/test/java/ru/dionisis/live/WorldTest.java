@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WorldTest {
 
-    private static final int STEPS_QUANTITY = 1000;
+    private static final int QUANTITY_STEPS = 1000;
     private static final File CONFIG_FILE = new File("target/classes/config.txt");
 
     @Test
@@ -18,7 +18,7 @@ class WorldTest {
         world1.executeGeneration(5);
 
         World world2 = new World(CONFIG_FILE);
-        world2.executeGeneration(5, 2);
+        world2.executeGeneration(5, 3);
 
         assertEquals(world1.toString(), world2.toString());
     }
@@ -26,25 +26,25 @@ class WorldTest {
     @Test
     void executeGeneration1thread() {
         World world = new World(CONFIG_FILE);
-        world.executeGeneration(STEPS_QUANTITY);
+        world.executeGeneration(QUANTITY_STEPS);
     }
 
     @Test
     void executeGeneration2thread() {
         World world = new World(CONFIG_FILE);
-        world.executeGeneration(STEPS_QUANTITY, 2);
+        world.executeGeneration(QUANTITY_STEPS, 2);
     }
 
     @Test
     void executeGeneration3thread() {
         World world = new World(CONFIG_FILE);
-        world.executeGeneration(STEPS_QUANTITY, 3);
+        world.executeGeneration(QUANTITY_STEPS, 3);
     }
 
     @Test
     void executeGeneration4thread() {
         World world = new World(CONFIG_FILE);
-        world.executeGeneration(STEPS_QUANTITY, 4);
+        world.executeGeneration(QUANTITY_STEPS, 4);
     }
 
 }
