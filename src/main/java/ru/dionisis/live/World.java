@@ -106,13 +106,14 @@ public class World {
 
     /**
      * пересчитывает поле в нескольких потоках
-     * @param steps количество итераций/поколений
+     *
+     * @param steps           количество итераций/поколений
      * @param quantityThreads количество потоков
      */
     public void executeGeneration(int steps, int quantityThreads) {
         ExecutorService threads = Executors.newFixedThreadPool(quantityThreads - 1);
-        CyclicBarrier barrier = new CyclicBarrier(quantityThreads);
-        List<Runnable> tasks = initTasks(quantityThreads, barrier);
+        Phaser phaser = new Phaser(quantityThreads);
+        List<Runnable> tasks = initTasks(quantityThreads, phaser);
         for (int stepID = 0; stepID < steps; stepID++) {
             newState = new byte[length];
             tasks.stream()
@@ -121,24 +122,25 @@ public class World {
             tasks.get(0).run();
             state = newState;
         }
+        threads.shutdownNow();
     }
 
-    private List<Runnable> initTasks(int quantityThreads, CyclicBarrier barrier) {
+    private List<Runnable> initTasks(int quantityThreads, Phaser phaser) {
         List<Runnable> tasks = new ArrayList<>(quantityThreads);
         for (int threadID = 0; threadID < quantityThreads; threadID++) {
             int firstID = threadID;
             tasks.add(() -> {
-                for (int cellID = firstID; cellID < length; cellID += quantityThreads) {
-                    executeCell(cellID);
-                }
-                try {
-                    barrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    e.printStackTrace();
-                }
+                excequtePartOfWorld(quantityThreads, firstID);
+                phaser.arriveAndAwaitAdvance();
             });
         }
         return tasks;
+    }
+
+    private void excequtePartOfWorld(int quantityThreads, int firstID) {
+        for (int cellID = firstID; cellID < length; cellID += quantityThreads) {
+            executeCell(cellID);
+        }
     }
 
     private void executeCell(int index) {
